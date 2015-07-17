@@ -1,0 +1,97 @@
+<!-- extend base layout -->
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="row-fluid">
+  <div class="span11 offset1">
+   <table>
+       <tr valign="top">
+           <td><img src="{{ user.avatar(128) }}"></td>
+           <td>
+             <h1>{{user.nickname}}</h1>
+             {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+             {% if user.last_seen %}<p><i>Last seen on: {{ user.last_seen }}</i></p>{% endif %}
+	     <p>{{ user.followers.count() }} followers | 
+             {% if user.id == g.user.id %}
+                 <a href="{{ url_for('edit') }}">Edit your profile</a>
+             {% elif not g.user.is_following(user) %}
+                 <a href="{{ url_for('follow', nickname=user.nickname) }}">Follow</a>
+             {% else %}
+                 <a href="{{ url_for('unfollow', nickname=user.nickname) }}">Unfollow</a>
+             {% endif %}
+             </p>
+           </td>
+       </tr>
+   </table>
+   <hr>
+ </div> 
+</div>
+
+
+{% for post in posts.items %}
+	<div class="{{ post.id }}">
+	 
+	   <div>
+    	     {% include 'post.html' %}
+	   </div>
+	   <hr>
+	   <div class="row-fluid">
+  	     <div class="span11 offset1"> 
+	       <div class="comments">
+    	         {% if post.comments %}
+                     <p>
+                     {% for comment in post.comments %}
+                        <p><span style="color: indigo;"><i>{{ comment.name }}</i>:  </span>{{ comment.body }} <br /> {{ comment.timestamp }}</p>
+				
+                     {% endfor %}
+                     </p>
+                 {% endif %}
+	       </div>
+	     </div>
+	   </div>
+	
+	   <div>
+	     <form action="" method="post" name="post">
+       	     	{{ form.hidden_tag() }}
+       		<table>
+           		<tr>
+               			<td>Add a comment:</td>
+           		</tr>
+	   		<tr>
+               			<td>Name</td>
+               			<td>{{ form.title(size=30, maxlength=40) }}</td>
+               			<td>
+               				{% for error in form.title.errors %}
+               					<span style="color: red;">[{{ error }}]</span><br>
+               				{% endfor %}
+               			</td>
+           		</tr>
+
+	   		<tr>
+               			<td>Comment</td>
+               			<td>{{ form.post(size=30, maxlength=140) }}</td>
+               			<td>
+               				{% for error in form.post.errors %}
+               					<span style="color: red;">[{{ error }}]</span><br>
+               				{% endfor %}
+               			</td>
+           		</tr>
+
+           		<tr>
+               			<td></td>
+               			<td><input type="submit" name="btn" value="Comment"></td>
+               			<td></td>
+           		</tr>
+       		</table>
+     	    </form>	
+	   </div>
+
+	</div>
+     {% endfor %}
+ 
+   {% if posts.has_prev %}<a href="{{ url_for('user', nickname=user.nickname, page=posts.prev_num) }}">&lt;&lt; Newer posts</a>{% else %}&lt;&lt; Newer posts{% endif %} | 
+   {% if posts.has_next %}<a href="{{ url_for('user', nickname=user.nickname, page=posts.next_num) }}">Older posts &gt;&gt;</a>{% else %}Older posts &gt;&gt;{% endif %}
+
+
+{% endblock %}
